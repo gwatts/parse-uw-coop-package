@@ -35,33 +35,67 @@ func uniqueStrings(squashCase bool, inStrs []string) (outStrs []string) {
 	return outStrs
 }
 
-func main() {
-	options := struct {
-		fileRegex         string
-		pdfToAscii        string
-		pathToParse       string
-		concurrency       int
-		emailRegex        string
-		linkedInRegex     string
-		githubRegex       string
-		coverLetterRegex  string
-		worktermEvalRegex string
-		averagesRegex     string
-	}{
-		fileRegex:         `([A-Za-z -]+) ([A-Za-z-]+) \(([0-9]+)\).pdf`,
-		pdfToAscii:        "ps2ascii",
-		pathToParse:       ".",
-		concurrency:       4, // 4 seems to be a sweet spot
-		emailRegex:        `[A-Za-z0-9_.-]+\@[A-Za-z0-9.-]+\.[A-Za-z0-9]+`,
-		linkedInRegex:     `linkedin.com/in/[A-Za-z0-9_.-]+`,
-		githubRegex:       `github.com/[A-Za-z0-9_.-]+`,
-		coverLetterRegex:  `[Ss]incerely|[Hh]iring [Mm]anager`,
-		worktermEvalRegex: `UNSATISFACTORY|MARGINAL|SATISFACTORY|VERY GOOD|EXCELLENT|OUTSTANDING`,
-		averagesRegex:     `Term Average:\s*([0-9]{2}\.*[0-9]*)`,
+func pdfToText(filename string) string {
+	if _, err := exec.LookPath(options.pdfToText); err == nil {
+		tmpFile, err := os.CreateTemp("", "parseuw")
+		if err != nil {
+			log.Fatal("failed to create temp file", err)
+		}
+		defer os.Remove(tmpFile.Name())
+		defer tmpFile.Close()
+		cmd := exec.Command(options.pdfToText, filename, tmpFile.Name())
+		err = cmd.Run()
+		if err != nil {
+			log.Fatal("failed to execute pdftotext for ", filename, ": ", err)
+		}
+		data, err := ioutil.ReadAll(tmpFile)
+		if err != nil {
+			log.Fatal("failed to read temp file", err)
+		}
+		return string(data)
 	}
 
+	if _, err := exec.LookPath(options.pdfToAscii); err != nil {
+		log.Fatal("neither ps2ascii or pdftotext were found")
+	}
+	cmd := exec.Command(options.pdfToAscii, filename)
+	data, err := cmd.Output()
+	if err != nil {
+		log.Fatal("failed to execute ps2ascii for ", filename, ": ", err)
+	}
+	return string(data)
+}
+
+var options = struct {
+	fileRegex         string
+	pdfToAscii        string
+	pdfToText         string
+	pathToParse       string
+	concurrency       int
+	emailRegex        string
+	linkedInRegex     string
+	githubRegex       string
+	coverLetterRegex  string
+	worktermEvalRegex string
+	averagesRegex     string
+}{
+	fileRegex:         `([A-Za-z -]+) ([A-Za-z-]+) \(([0-9]+)\).pdf`,
+	pdfToAscii:        "ps2ascii",
+	pdfToText:         "pdftotext",
+	pathToParse:       ".",
+	concurrency:       4, // 4 seems to be a sweet spot
+	emailRegex:        `[A-Za-z0-9_.-]+\@[A-Za-z0-9.-]+\.[A-Za-z0-9]+`,
+	linkedInRegex:     `linkedin.com/in/[A-Za-z0-9_.-]+`,
+	githubRegex:       `github.com/[A-Za-z0-9_.-]+`,
+	coverLetterRegex:  `[Ss]incerely|[Hh]iring [Mm]anager`,
+	worktermEvalRegex: `UNSATISFACTORY|MARGINAL|SATISFACTORY|VERY GOOD|EXCELLENT|OUTSTANDING`,
+	averagesRegex:     `Term Average:\s*([0-9]{2}\.*[0-9]*)`,
+}
+
+func main() {
 	flag.StringVar(&options.fileRegex, "fileregex", options.fileRegex, "Regex filter for filenames")
 	flag.StringVar(&options.pdfToAscii, "pdftoascii", options.pdfToAscii, "PDF to ASCII converter")
+	flag.StringVar(&options.pdfToText, "pdftotext", options.pdfToText, "PDF to Text converter")
 	flag.IntVar(&options.concurrency, "concurrency", options.concurrency, "Number of PDF parsing threads to run in parallel")
 	flag.StringVar(&options.emailRegex, "emailRegex", options.emailRegex, "Regex for email address")
 	flag.StringVar(&options.linkedInRegex, "linkedInRegex", options.linkedInRegex, "Regex for LinkedIn")
@@ -79,7 +113,7 @@ func main() {
 
 	files, err := ioutil.ReadDir(options.pathToParse)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("ReadDir failed", err)
 	}
 
 	// collect filenames to parse
@@ -128,12 +162,7 @@ func main() {
 				id := filenameComponents[3]
 
 				// extract text from PDF
-				cmd := exec.Command(options.pdfToAscii, filename)
-				pdfText, err := cmd.Output()
-				if err != nil {
-					log.Fatal(err)
-				}
-				pdfTextStr := string(pdfText)
+				pdfTextStr := pdfToText(filename)
 
 				// parse additional information
 

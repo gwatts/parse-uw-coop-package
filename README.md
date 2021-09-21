@@ -13,6 +13,8 @@ $ go get github.com/curvegrid/parse-uw-coop-package
 $ parse-uw-coop-package -h
 ```
 
+If running on Mc, use [HomeBrew](https://brew.sh) to install the Poplar package, which provides the `pdftotext` utility (`brew install poppler`).  The utility will fallback to `ps2ascii`, but it tends to be less reliable.
+
 # Usage
 This assumes you are an employer of University of Waterloo co-operative education (co-op, interns) students and have a valid Employer login on [WaterlooWorks](https://waterlooworks.uwaterloo.ca/home.htm).
 
@@ -58,7 +60,7 @@ ID,First name,Last name,Email,Email with name,LinkedIn,Github,Included a cover l
 
 # Known Issues and Limitations
 - This has only been tested on macOS.
-- The PDF-to-text converter defaults to `ps2ascii`, which may not be available on your system. See the command line options to adjust.
+- The PDF-to-text converter defaults to `ps2ascii` or `pdftotext`, which may not be available on your system. See the command line options to adjust.
 - The PDF-to-text process is not perfect, especially with formatted PDFs. Email addresses seem to be especially problematic, with many of them mangled. For example, we've seen `jeff@example.com` turn into `.com      example       je   ef@` with `ps2ascii`, even in what seems like a fairly "standard" formatted PDF. Manual cleanup will be required.
 
 # Future enhancements
