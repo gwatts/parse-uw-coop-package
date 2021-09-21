@@ -48,7 +48,7 @@ func main() {
 		worktermEvalRegex string
 		averagesRegex     string
 	}{
-		fileRegex:         `([A-Za-z -]+) ([A-Za-z-]+) \(([0-9]+)\).pdf`,
+		fileRegex:         `^([A-Za-z -]+)-([A-Za-z -]+)-([0-9]+)-.*\.pdf$`,
 		pdfToAscii:        "ps2ascii",
 		pathToParse:       ".",
 		concurrency:       4, // 4 seems to be a sweet spot
