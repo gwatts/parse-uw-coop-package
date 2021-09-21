@@ -1,3 +1,3 @@
-module github.com/curvegrid/parse-uw-coop-package
+module github.com/gwatts/parse-uw-coop-package
 
-go 1.13
+go 1.17
