@@ -79,7 +79,7 @@ var options = struct {
 	worktermEvalRegex string
 	averagesRegex     string
 }{
-	fileRegex:         `([A-Za-z -]+) ([A-Za-z-]+) \(([0-9]+)\).pdf`,
+	fileRegex:         `^([A-Za-z -]+)-([A-Za-z -]+)-([0-9]+)-.*\.pdf$`,
 	pdfToAscii:        "ps2ascii",
 	pdfToText:         "pdftotext",
 	pathToParse:       ".",
