@@ -72,6 +72,7 @@ var options = struct {
 	pdfToText         string
 	pathToParse       string
 	concurrency       int
+	idRegex           string
 	emailRegex        string
 	linkedInRegex     string
 	githubRegex       string
@@ -84,6 +85,7 @@ var options = struct {
 	pdfToText:         "pdftotext",
 	pathToParse:       ".",
 	concurrency:       4, // 4 seems to be a sweet spot
+	idRegex:           `2\d{7}`,
 	emailRegex:        `[A-Za-z0-9_.-]+\@[A-Za-z0-9.-]+\.[A-Za-z0-9]+`,
 	linkedInRegex:     `linkedin.com/in/[A-Za-z0-9_.-]+`,
 	githubRegex:       `github.com/[A-Za-z0-9_.-]+`,
@@ -98,6 +100,7 @@ func main() {
 	flag.StringVar(&options.pdfToText, "pdftotext", options.pdfToText, "PDF to Text converter")
 	flag.IntVar(&options.concurrency, "concurrency", options.concurrency, "Number of PDF parsing threads to run in parallel")
 	flag.StringVar(&options.emailRegex, "emailRegex", options.emailRegex, "Regex for email address")
+	flag.StringVar(&options.idRegex, "idRegex", options.idRegex, "Regex for student id")
 	flag.StringVar(&options.linkedInRegex, "linkedInRegex", options.linkedInRegex, "Regex for LinkedIn")
 	flag.StringVar(&options.githubRegex, "githubRegex", options.githubRegex, "Regex for Github")
 	flag.StringVar(&options.coverLetterRegex, "coverLetterRegex", options.coverLetterRegex, "Regex for cover letter yes/no")
@@ -139,6 +142,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	// Compile regexes
+	idRe := regexp.MustCompile(options.idRegex)
 	emailRe := regexp.MustCompile(options.emailRegex)
 	linkedInRe := regexp.MustCompile(options.linkedInRegex)
 	githubRe := regexp.MustCompile(options.githubRegex)
@@ -159,12 +163,12 @@ func main() {
 				// key fields from filename
 				firstName := filenameComponents[1]
 				lastName := filenameComponents[2]
-				id := filenameComponents[3]
 
 				// extract text from PDF
 				pdfTextStr := pdfToText(filename)
 
 				// parse additional information
+				id := idRe.FindString(pdfTextStr)
 
 				// email
 				emails := emailRe.FindAllString(pdfTextStr, -1)
