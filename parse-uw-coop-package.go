@@ -58,7 +58,7 @@ func main() {
 		linkedInRegex:     `linkedin.com/in/[A-Za-z0-9_.-]+`,
 		githubRegex:       `github.com/[A-Za-z0-9_.-]+`,
 		coverLetterRegex:  `[Ss]incerely|[Hh]iring [Mm]anager`,
-		worktermEvalRegex: `UNSATISFACTORY|MARGINAL|SATISFACTORY|VERY GOOD|EXCELLENT|OUTSTANDING`,
+		worktermEvalRegex: `UNSATISFACTORY|MARGINAL|SATISFACTORY|(VERY )?GOOD|EXCELLENT|OUTSTANDING`,
 		averagesRegex:     `Term Average:\s*([0-9]{2}\.*[0-9]*)`,
 	}
 
